@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/group1"
+            android:checkableBehavior="single">
+        <item android:id="@+id/messages"
+              android:checked="true"
+              android:title="@string/nav_messages" />
+
+        <item android:id="@+id/calls"
+              android:title="@string/nav_calls" />
+
+        <item android:id="@+id/ussd"
+              android:title="@string/nav_ussd" />
+
+        <item android:id="@+id/location"
+              android:title="@string/nav_location" />
+    </group>
+
+
+    <group android:id="@+id/group2"
+            android:checkableBehavior="single">
+        <item android:id="@+id/settings"
+              android:title="@string/nav_settings" />
+
+    </group>
+
+
+</menu>
