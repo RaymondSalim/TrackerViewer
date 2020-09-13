@@ -21,7 +21,8 @@
     <group android:id="@+id/group2"
             android:checkableBehavior="single">
         <item android:id="@+id/settings"
-              android:title="@string/nav_settings" />
+              android:title="@string/nav_settings"
+              android:checkable="false"/>
 
     </group>
 

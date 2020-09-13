@@ -3,7 +3,9 @@ package com.reas.trackerviewer
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -12,6 +14,7 @@ import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.nav_header.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +28,8 @@ class MainActivity : AppCompatActivity() {
     private var ussdFragment = USSDFragment()
     private var activeFragment: Fragment = messagesFragment
     private var fragmentManager = supportFragmentManager
+
+    private var firebaseAuth = FirebaseAuth.getInstance()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +61,6 @@ class MainActivity : AppCompatActivity() {
             R.id.messages -> {
                 fragmentManager.beginTransaction().hide(activeFragment).show(messagesFragment).commit()
                 activeFragment = messagesFragment
-
             }
 
             R.id.calls -> {
@@ -74,11 +78,20 @@ class MainActivity : AppCompatActivity() {
                 activeFragment = locationFragments
             }
 
+            R.id.settings -> {
+                val settings = Intent(this, SettingsActivity::class.java)
+                startActivity(settings)
+            }
+
         }
 
-        title = item.title
-        item.isChecked = true
+        if (item.itemId != R.id.settings) {
+            title = item.title
+            item.isChecked = true
+        }
+
         mDrawer.closeDrawers()
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -115,5 +128,7 @@ class MainActivity : AppCompatActivity() {
 
         navDrawer = findViewById(R.id.navigation)
         setupDrawerContent(navDrawer)
+
+        navDrawer.getHeaderView(0).findViewById<TextView>(R.id.user_email).text = firebaseAuth.currentUser?.email
     }
 }
