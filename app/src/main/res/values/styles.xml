@@ -7,8 +7,5 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="Settings" parent="AppTheme">
-
-    </style>
 
 </resources>
