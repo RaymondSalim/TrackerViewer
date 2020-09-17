@@ -1,10 +1,12 @@
 package com.reas.trackerviewer
 
+import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -35,13 +37,6 @@ class MainActivity : AppCompatActivity() {
         setupToolbar()
         setupDrawer()
 
-        logout.setOnClickListener {
-            // TODO Add dialog to confirm user action
-            FirebaseAuth.getInstance().signOut()
-            val loginIntent = Intent(this, LoginActivity::class.java)
-            startActivity(loginIntent)
-            finish()
-        }
     }
 
     private fun setupDrawerContent(drawer: NavigationView) {
@@ -125,5 +120,30 @@ class MainActivity : AppCompatActivity() {
         setupDrawerContent(navDrawer)
 
         navDrawer.getHeaderView(0).findViewById<TextView>(R.id.user_email).text = firebaseAuth.currentUser?.email
+
+        logoutButton()
+    }
+
+    private fun logoutButton() {
+        logout.setOnClickListener {
+            val builder = applicationContext.let {
+                AlertDialog.Builder(this)
+            }
+            builder.setMessage(R.string.logout_confirmation)
+                    .setTitle(R.string.logout)
+                    .setIcon(R.drawable.ic_baseline_power_settings_new_24)
+                    .setNegativeButton(R.string.cancel) { dialog, which -> dialog.dismiss() }
+                    .setPositiveButton(R.string.logout) {
+                        dialog, which ->
+                            FirebaseAuth.getInstance().signOut()
+                            val loginIntent = Intent(this, LoginActivity::class.java)
+                            startActivity(loginIntent)
+                            finish()
+                    }
+                    .show()
+
+            val dialog = builder.create()
+
+        }
     }
 }
