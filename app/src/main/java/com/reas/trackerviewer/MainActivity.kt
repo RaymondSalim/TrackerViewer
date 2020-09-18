@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -33,10 +34,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initializeFragments()
+
+        initializeFragments(savedInstanceState?.getString("activeFragment"))
         setupToolbar()
         setupDrawer()
 
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("activeFragment", activeFragment.tag)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                mDrawer.openDrawer(GravityCompat.START)
+                return true
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun setupDrawerContent(drawer: NavigationView) {
@@ -72,7 +90,6 @@ class MainActivity : AppCompatActivity() {
                 val settings = Intent(this, SettingsActivity::class.java)
                 startActivity(settings)
             }
-
         }
 
         if (item.itemId != R.id.settings) {
@@ -84,22 +101,18 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    when (item.itemId) {
-        android.R.id.home -> {
-            mDrawer.openDrawer(GravityCompat.START)
-            return true
-        }
-    }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun initializeFragments() {
-        fragmentManager.beginTransaction().add(R.id.content_main, messagesFragment, "messagesFragment").commit()
+    private fun initializeFragments(active: String?) {
+        fragmentManager.beginTransaction().add(R.id.content_main, messagesFragment, "messagesFragment").hide(messagesFragment).commit()
         fragmentManager.beginTransaction().add(R.id.content_main, callFragments, "callFragment").hide(callFragments).commit()
         fragmentManager.beginTransaction().add(R.id.content_main, ussdFragment, "ussdFragment").hide(ussdFragment).commit()
         fragmentManager.beginTransaction().add(R.id.content_main, locationFragments, "locationFragment").hide(locationFragments).commit()
+
+        if (active == null) {
+            fragmentManager.beginTransaction().show(messagesFragment).commit()
+        } else {
+            activeFragment = fragmentManager.findFragmentByTag(active)!!
+        }
+
         fragmentManager.executePendingTransactions()
 
     }
@@ -141,8 +154,6 @@ class MainActivity : AppCompatActivity() {
                             finish()
                     }
                     .show()
-
-            val dialog = builder.create()
 
         }
     }

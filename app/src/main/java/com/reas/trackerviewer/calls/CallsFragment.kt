@@ -8,8 +8,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
@@ -22,24 +26,27 @@ import java.io.File
 import java.io.FileReader
 import java.lang.StringBuilder
 
-class CallsFragment : Fragment() {
+class CallsFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private val auth = FirebaseAuth.getInstance()
+
+    private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
 
     private val storage = Firebase.storage
     private val storageRef = storage.reference
 
-    val smsJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/SMS.json")
-    val ussdJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/USSD.json")
-    val locationJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/Location.json")
-    val callJsonRef = storageRef.child("users/${auth.uid}/${Build.ID}/Calls.json")
+//    val ussdJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/USSD.json")
+//    val locationJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/Location.json")
+    private val callJsonRef = storageRef.child("users/${auth.uid}/${Build.ID}/Calls.json")
 
     private lateinit var root: View
-
 
     private lateinit var callFile: File
 
     var callData: HashMap<String, ArrayList<CallBaseObject>>? = null
-    
+
+    private val callViewModel: CallViewModel by lazy {
+        ViewModelProvider(this).get(CallViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +54,7 @@ class CallsFragment : Fragment() {
         callFile = File(requireContext().filesDir.toString() + "/Calls.json")
 
         getData()
+
 
 
     }
@@ -59,15 +67,20 @@ class CallsFragment : Fragment() {
         root = inflater.inflate(R.layout.fragment_calls, container, false)
 
 
+
         return root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initializeSwipeLayout()
+    }
+
     private fun getData() {
-        var temp: HashMap<String, ArrayList<CallBaseObject>>? = null
         callJsonRef.getFile(callFile).addOnSuccessListener {
             Log.d("CallsFragment", "getData: Call File Downloaded")
-            callData = loadFile()
-
+            callViewModel.dataChanged()
+            callData = callViewModel.getMap()
             initializeRecyclerView()
 
         }.addOnFailureListener {
@@ -76,35 +89,41 @@ class CallsFragment : Fragment() {
 
     }
 
-    private fun loadFile(): HashMap<String, ArrayList<CallBaseObject>> {
-        var temp = HashMap<String, ArrayList<CallBaseObject>>()
-
-        val fileReader = FileReader(callFile)
-        val bufferedReader = BufferedReader(fileReader)
-        val stringBuilder  = StringBuilder()
-        var line = bufferedReader.readLine()
-        while (line != null) {
-            stringBuilder.append(line).append("\n")
-            line = bufferedReader.readLine()
-        }
-        bufferedReader.close()
-        val response = stringBuilder.toString()
-
-        if (response != "") {
-            val type = object : TypeToken<HashMap<String, ArrayList<CallBaseObject>>>() {}.type
-            temp = Gson().fromJson(response, type)
-        }
-
-        return temp
-    }
-
     private fun initializeRecyclerView() {
+        var recyclerView: RecyclerView
+        var recyclerViewAdapter: CallRecyclerView? = null
         if (callData != null) {
-            val recyclerView = root.findViewById<RecyclerView>(R.id.callRV)
-            val recyclerViewAdapter = CallRecyclerView(requireActivity(), callData!!)
+            recyclerView = root.findViewById<RecyclerView>(R.id.callRV)
+            recyclerViewAdapter = CallRecyclerView(requireActivity(), callData!!)
             recyclerView.adapter = recyclerViewAdapter
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        } else {
+            recyclerViewAdapter?.notifyDataSetChanged()
         }
+
+        mSwipeRefreshLayout?.isRefreshing = false
+    }
+
+    private fun initializeSwipeLayout() {
+        mSwipeRefreshLayout = view?.findViewById<SwipeRefreshLayout>(R.id.calls_container)
+        mSwipeRefreshLayout?.setOnRefreshListener(this)
+        mSwipeRefreshLayout?.setColorSchemeColors(
+            R.color.colorPrimary,
+            android.R.color.holo_green_dark,
+            android.R.color.holo_orange_dark,
+            android.R.color.holo_blue_dark)
+
+        mSwipeRefreshLayout?.post {
+            Log.d("TEST", "initializeSwipeLayout: runnable")
+            mSwipeRefreshLayout?.isRefreshing = true
+
+            getData()
+        }
+    }
+
+    override fun onRefresh() {
+        Log.d("TEST", "onRefresh: called")
+        getData()
     }
 
 }

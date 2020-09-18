@@ -1,33 +1,50 @@
 package com.reas.trackerviewer.messages
 
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 import com.reas.trackerviewer.R
+import java.io.File
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+private const val TAG = "MessagesFragment"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [MessagesFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class MessagesFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private val auth = FirebaseAuth.getInstance()
+    private val storage = Firebase.storage
+    private val storageRef = storage.reference
+
+    val smsJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/SMS.json")
+    val convJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/Conversation.json")
+
+    private lateinit var smsFile: File
+    private lateinit var convFile: File
+
+    private val messagesViewModel: MessagesViewModel by lazy {
+        ViewModelProvider(this).get(MessagesViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
+        smsFile = File(requireContext().filesDir.toString() + "/SMS.json")
+        convFile = File(requireContext().filesDir.toString() + "/Conversation.json")
+
+        getData()
+
+
+
+
     }
 
     override fun onCreateView(
@@ -38,23 +55,44 @@ class MessagesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_messages, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment MessagesFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            MessagesFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initializeRecyclerView()
     }
+
+    private fun getData() {
+        smsJsonRef.getFile(smsFile).addOnSuccessListener {
+            Log.d(TAG, "getData: SMS File downloaded")
+        }.addOnFailureListener {
+            Log.e(TAG, "getData: SMS File failed to download", it)
+            Log.d(TAG, "getData: SMS File failed to download. Retrying once")
+            smsJsonRef.getFile(smsFile)
+        }
+
+        convJsonRef.getFile(convFile).addOnSuccessListener {
+            Log.d(TAG, "getData: Conversation File downloaded")
+            initializeRecyclerView()
+
+        }.addOnFailureListener {
+            Log.e(TAG, "getData: Conversation File failed to download", it)
+            Log.d(TAG, "getData: Conversation File failed to download. Retrying once")
+            convJsonRef.getFile(convFile)
+        }
+    }
+
+    private fun initializeRecyclerView() {
+        val convData = messagesViewModel.getConv()
+
+        var recyclerView: RecyclerView
+        var recyclerViewAdapter: MessagesRecyclerView? = null
+
+        if (convData != null) {
+            recyclerView = view!!.findViewById(R.id.messagesRecyclerView)
+            recyclerViewAdapter = MessagesRecyclerView(requireContext(), convData)
+            recyclerView.adapter = recyclerViewAdapter
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        }
+
+    }
+
 }

@@ -5,9 +5,11 @@
              android:layout_height="match_parent"
              tools:context=".messages.MessagesFragment">
 
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/messagesRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="@string/hello_messages_fragment"/>
+            android:scrollbars="vertical"
+            />
 
 </FrameLayout>
