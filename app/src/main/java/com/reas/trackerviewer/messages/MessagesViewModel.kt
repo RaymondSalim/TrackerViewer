@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.reas.trackerviewer.calls.CallBaseObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -56,7 +57,8 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
     }
 
     private fun loadConversation(file: File): SortedMap<String, MessagesBaseObject>? {
-        var temp: SortedMap<String, MessagesBaseObject>? = null
+        var temp: HashMap<String, MessagesBaseObject>? = null
+        var sorted: SortedMap<String, MessagesBaseObject>? = null
 
         val fileReader = FileReader(file)
         val bufferedReader = BufferedReader(fileReader)
@@ -70,9 +72,24 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
         val response = stringBuilder.toString()
 
         if (response != "") {
-            val type = object : TypeToken<SortedMap<String, MessagesBaseObject>>() {}.type
+            val type = object : TypeToken<HashMap<String, MessagesBaseObject>>() {}.type
             temp = Gson().fromJson(response, type)
+            sorted = sortHashMap(temp!!)
         }
-        return temp
+        return sorted
+    }
+
+    fun dataChanged() {
+        smsMap.value = loadSMS(smsFile)
+        convMap.value = loadConversation(convFile)
+    }
+
+    private fun sortHashMap(hashMap: HashMap<String, MessagesBaseObject>): SortedMap<String, MessagesBaseObject> {
+        val output: HashMap<String, MessagesBaseObject> = HashMap()
+        hashMap.forEach {
+            output[it.key] = it.value
+        }
+
+        return output.toSortedMap(compareByDescending { output[it]?.mTime })
     }
 }

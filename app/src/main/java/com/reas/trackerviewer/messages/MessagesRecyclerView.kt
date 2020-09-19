@@ -1,6 +1,7 @@
 package com.reas.trackerviewer.messages
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.reas.trackerviewer.R
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
+
+private const val TAG = "MessagesRecyclerView"
 
 class MessagesRecyclerView(
     private val context: Context,
@@ -38,6 +42,10 @@ class MessagesRecyclerView(
 
         holder.date.text = dateFormat.format(calender.time)
         holder.time.text = timeFormat.format(calender.time)
+
+        holder.itemView.setOnClickListener {
+            Log.d(TAG, "onBindViewHolder: Clicked on ${keyList[position]}")
+        }
     }
 
     override fun getItemCount(): Int = list.keys.size

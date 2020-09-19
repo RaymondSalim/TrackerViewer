@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
@@ -19,10 +20,12 @@ import java.io.File
 
 private const val TAG = "MessagesFragment"
 
-class MessagesFragment : Fragment() {
+class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private val auth = FirebaseAuth.getInstance()
     private val storage = Firebase.storage
     private val storageRef = storage.reference
+
+    private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
 
     val smsJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/SMS.json")
     val convJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/Conversation.json")
@@ -57,7 +60,23 @@ class MessagesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initializeRecyclerView()
+        initializeSwipeLayout()
+    }
+
+    private fun initializeSwipeLayout() {
+        mSwipeRefreshLayout = view?.findViewById(R.id.messages_container)
+        mSwipeRefreshLayout?.setOnRefreshListener(this)
+        mSwipeRefreshLayout?.setColorSchemeColors(
+                R.color.colorPrimary,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark)
+
+        mSwipeRefreshLayout?.post {
+            mSwipeRefreshLayout?.isRefreshing = true
+
+            getData()
+        }
     }
 
     private fun getData() {
@@ -71,6 +90,7 @@ class MessagesFragment : Fragment() {
 
         convJsonRef.getFile(convFile).addOnSuccessListener {
             Log.d(TAG, "getData: Conversation File downloaded")
+            messagesViewModel.dataChanged()
             initializeRecyclerView()
 
         }.addOnFailureListener {
@@ -93,6 +113,11 @@ class MessagesFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
         }
 
+        mSwipeRefreshLayout?.isRefreshing = false
+    }
+
+    override fun onRefresh() {
+        getData()
     }
 
 }
