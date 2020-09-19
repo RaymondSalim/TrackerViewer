@@ -36,7 +36,7 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
 
 
     private fun loadSMS(file: File): HashMap<String, ArrayList<MessagesBaseObject>> {
-        var temp = java.util.HashMap<String, java.util.ArrayList<MessagesBaseObject>>()
+        var temp = java.util.HashMap<String, ArrayList<MessagesBaseObject>>()
 
         val fileReader = FileReader(file)
         val bufferedReader = BufferedReader(fileReader)
@@ -50,7 +50,7 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
         val response = stringBuilder.toString()
 
         if (response != "") {
-            val type = object : TypeToken<java.util.HashMap<String, java.util.ArrayList<MessagesBaseObject>>>() {}.type
+            val type = object : TypeToken<java.util.HashMap<String, ArrayList<MessagesBaseObject>>>() {}.type
             temp = Gson().fromJson(response, type)
         }
         return temp

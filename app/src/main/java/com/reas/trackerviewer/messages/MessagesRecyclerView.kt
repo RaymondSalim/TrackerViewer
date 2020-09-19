@@ -1,6 +1,7 @@
 package com.reas.trackerviewer.messages
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.reas.trackerviewer.R
+import com.reas.trackerviewer.messages.chat.ChatActivity
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
@@ -45,6 +47,9 @@ class MessagesRecyclerView(
 
         holder.itemView.setOnClickListener {
             Log.d(TAG, "onBindViewHolder: Clicked on ${keyList[position]}")
+            val chatIntent = Intent(context, ChatActivity::class.java)
+            chatIntent.putExtra("msgFrom", keyList[position])
+            context.startActivity(chatIntent)
         }
     }
 
