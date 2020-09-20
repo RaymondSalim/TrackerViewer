@@ -8,10 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.reas.trackerviewer.R
 import com.reas.trackerviewer.messages.MessagesBaseObject
-import com.reas.trackerviewer.messages.MessagesRecyclerView
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class ChatRecyclerViewAdapter(
     private val context: Context,

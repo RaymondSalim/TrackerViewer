@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.view.marginLeft
 import androidx.recyclerview.widget.RecyclerView
 import com.reas.trackerviewer.R
 import java.text.SimpleDateFormat
@@ -39,7 +38,7 @@ class CallRecyclerView(
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val sorted: SortedMap<String, CallBaseObject> = sortHashMap(list)
-        listOfKeys = ArrayList<String>(sorted.keys)
+        listOfKeys = ArrayList(sorted.keys)
         var callBaseObject: CallBaseObject = sorted[listOfKeys[position]] as CallBaseObject
 
         // Set the call number
@@ -91,7 +90,7 @@ class CallRecyclerView(
     }
 
     private fun sortHashMap(hashMap: HashMap<String, ArrayList<CallBaseObject>>): SortedMap<String, CallBaseObject> {
-        val output: HashMap<String, CallBaseObject> = HashMap<String, CallBaseObject>()
+        val output: HashMap<String, CallBaseObject> = HashMap()
         hashMap.forEach {
             val key = it.key
             val array = it.value

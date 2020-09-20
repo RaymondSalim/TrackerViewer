@@ -1,17 +1,14 @@
 package com.reas.trackerviewer.messages
 
 import android.app.Application
-import android.os.Message
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.reas.trackerviewer.calls.CallBaseObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class MessagesViewModel(application: Application): AndroidViewModel(application) {

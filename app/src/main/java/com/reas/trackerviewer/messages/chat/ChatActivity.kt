@@ -1,7 +1,7 @@
 package com.reas.trackerviewer.messages.chat
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,7 +32,9 @@ class ChatActivity : AppCompatActivity() {
     private fun initializeRecyclerView() {
         val recyclerView = findViewById<RecyclerView>(R.id.chatRV)
         val recyclerViewAdapter = ChatRecyclerViewAdapter(this, messagesViewModel.getSMS()?.get(msgFrom)!!)
+        val linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager.stackFromEnd = true
         recyclerView.adapter = recyclerViewAdapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.layoutManager = linearLayoutManager
     }
 }

@@ -12,7 +12,6 @@ import com.reas.trackerviewer.R
 import com.reas.trackerviewer.messages.chat.ChatActivity
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.HashMap
 
 private const val TAG = "MessagesRecyclerView"
 
@@ -60,7 +59,6 @@ class MessagesRecyclerView(
         var date: TextView
         var time: TextView
         var smsSender: TextView
-        var key: String? = null
         var context: Context? = null
 
         init {

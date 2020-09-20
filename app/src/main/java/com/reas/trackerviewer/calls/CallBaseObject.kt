@@ -28,6 +28,6 @@ data class CallBaseObject(val mDuration: Long, val mTime: Long, val mDirection: 
     }
 
     override fun equals(other: Any?): Boolean {
-        return !super.equals(other);
+        return !super.equals(other)
     }
 }
