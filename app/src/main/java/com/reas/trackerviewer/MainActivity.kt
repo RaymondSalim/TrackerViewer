@@ -12,6 +12,8 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.reas.trackerviewer.calls.CallsFragment
+import com.reas.trackerviewer.locationHistory.LocationHistoryFragment
+import com.reas.trackerviewer.locationLive.LocationLiveFragment
 import com.reas.trackerviewer.messages.MessagesFragment
 import com.reas.trackerviewer.ussd.USSDFragment
 import kotlinx.android.synthetic.main.activity_main.*
@@ -21,7 +23,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navDrawer: NavigationView
 
     private var messagesFragment = MessagesFragment()
-    private var locationFragments = LocationFragments()
+    private var locationHistoryFragments = LocationHistoryFragment()
+    private var locationLiveFragment = LocationLiveFragment()
     private var callFragments = CallsFragment()
     private var ussdFragment = USSDFragment()
     private var activeFragment: Fragment = messagesFragment
@@ -80,9 +83,14 @@ class MainActivity : AppCompatActivity() {
                 activeFragment = ussdFragment
             }
 
-            R.id.location -> {
-                fragmentManager.beginTransaction().hide(activeFragment).show(locationFragments).commit()
-                activeFragment = locationFragments
+            R.id.location_history -> {
+                fragmentManager.beginTransaction().hide(activeFragment).show(locationHistoryFragments).commit()
+                activeFragment = locationHistoryFragments
+            }
+
+            R.id.location_live -> {
+                fragmentManager.beginTransaction().hide(activeFragment).show(locationLiveFragment).commit()
+                activeFragment = locationLiveFragment
             }
 
             R.id.settings -> {
@@ -104,7 +112,8 @@ class MainActivity : AppCompatActivity() {
         fragmentManager.beginTransaction().add(R.id.content_main, messagesFragment, "messagesFragment").hide(messagesFragment).commit()
         fragmentManager.beginTransaction().add(R.id.content_main, callFragments, "callFragment").hide(callFragments).commit()
         fragmentManager.beginTransaction().add(R.id.content_main, ussdFragment, "ussdFragment").hide(ussdFragment).commit()
-        fragmentManager.beginTransaction().add(R.id.content_main, locationFragments, "locationFragment").hide(locationFragments).commit()
+        fragmentManager.beginTransaction().add(R.id.content_main, locationHistoryFragments, "locationHistoryFragment").hide(locationHistoryFragments).commit()
+        fragmentManager.beginTransaction().add(R.id.content_main, locationLiveFragment, "locationLiveFragment").hide(locationLiveFragment).commit()
 
         if (active == null) {
             fragmentManager.beginTransaction().show(messagesFragment).commit()

@@ -1,6 +1,7 @@
 package com.reas.trackerviewer.messages
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
@@ -10,6 +11,8 @@ import java.io.File
 import java.io.FileReader
 import java.util.*
 import kotlin.collections.HashMap
+
+private const val TAG = "MessagesViewModel"
 
 class MessagesViewModel(application: Application): AndroidViewModel(application) {
     private val smsFile = File(application.filesDir.toString() + "/SMS.json")
@@ -48,7 +51,11 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
 
         if (response != "") {
             val type = object : TypeToken<java.util.HashMap<String, ArrayList<MessagesBaseObject>>>() {}.type
-            temp = Gson().fromJson(response, type)
+            try {
+                temp = Gson().fromJson(response, type)
+            } catch (e: Exception) {
+                Log.e(TAG, "loadSMS: Error", e)
+            }
         }
         return temp
     }
@@ -70,7 +77,11 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
 
         if (response != "") {
             val type = object : TypeToken<HashMap<String, MessagesBaseObject>>() {}.type
-            temp = Gson().fromJson(response, type)
+            try {
+                temp = Gson().fromJson(response, type)
+            } catch (e: Exception) {
+                Log.e(TAG, "loadConversation: Error", e)
+            }
             sorted = sortHashMap(temp!!)
         }
         return sorted

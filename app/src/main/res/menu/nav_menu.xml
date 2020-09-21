@@ -13,8 +13,11 @@
         <item android:id="@+id/ussd"
               android:title="@string/nav_ussd" />
 
-        <item android:id="@+id/location"
-              android:title="@string/nav_location" />
+        <item android:id="@+id/location_history"
+              android:title="@string/nav_location_history" />
+
+        <item android:id="@+id/location_live"
+              android:title="@string/nav_location_live" />
     </group>
 
 
