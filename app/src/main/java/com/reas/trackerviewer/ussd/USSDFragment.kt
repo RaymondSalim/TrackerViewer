@@ -1,11 +1,12 @@
 package com.reas.trackerviewer.ussd
 
-import android.os.Build
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import com.reas.trackerviewer.R
@@ -26,7 +28,7 @@ class USSDFragment : Fragment() {
     private val storage = Firebase.storage
     private val storageRef = storage.reference
 
-    private val ussdJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/USSD.json")
+    private lateinit var ussdJsonRef: StorageReference
 
     private lateinit var root: View
 
@@ -34,12 +36,19 @@ class USSDFragment : Fragment() {
 
     private var data: HashMap<String, String>? = null
 
+    private val deviceID: String by lazy {
+        val id = context?.getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)?.getString("activeDevice", "") ?: ""
+        return@lazy id.substring(id.indexOf("(")+1, id.indexOf(")"))
+    }
+
     private val ussdViewModel: USSDViewModel by lazy {
         ViewModelProvider(this).get(USSDViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("USSDFragment", "onCreate: ")
+        ussdJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/USSD.json")
 
         ussdFile = File(requireContext().filesDir.toString() + "/USSD.json")
 
@@ -64,6 +73,12 @@ class USSDFragment : Fragment() {
 
         }.addOnFailureListener {
             Log.d("USSDFragment", "getData: USSD File Failed to Download")
+
+            val errorCode = (it as StorageException).errorCode
+            if (errorCode != StorageException.ERROR_OBJECT_NOT_FOUND) {
+                Toast.makeText(context, "File failed to load please retry", Toast.LENGTH_SHORT).show()
+            }
+            mSwipeRefreshLayout?.isRefreshing = false
         }
     }
 

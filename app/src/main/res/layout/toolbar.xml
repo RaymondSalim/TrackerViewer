@@ -6,6 +6,6 @@
         android:fitsSystemWindows="true"
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/Theme.AppCompat.DayNight"
-        android:background="?attr/colorPrimaryDark">
+        android:background="@color/colorPrimaryLight">
 
 </com.google.android.material.appbar.MaterialToolbar>

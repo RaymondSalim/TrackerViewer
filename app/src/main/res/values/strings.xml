@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">TrackerViewer</string>
+    <string name="preference_file_key">com.reas.trackerview.PREFERENCE_FILE_KEY</string>
 
     <string name="user_email">email@email.com</string>
     <string name="nav_messages">Messages</string>
@@ -37,7 +38,7 @@
 
     <!-- Messages Preferences -->
     <string name="location_title">Location Interval</string>
-    <string name="location_dialog_message">Enter the interval in Milliseconds </string>
+    <string name="location_dialog_message">Enter the interval in Milliseconds</string>
     <string name="reply_title">Default reply action</string>
 
     <!-- Sync Preferences -->
@@ -45,4 +46,6 @@
     <string name="attachment_title">Download incoming attachments</string>
     <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

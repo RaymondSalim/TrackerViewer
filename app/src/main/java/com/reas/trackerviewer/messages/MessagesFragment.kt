@@ -1,18 +1,20 @@
 package com.reas.trackerviewer.messages
 
-import android.os.Build
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import com.reas.trackerviewer.R
@@ -27,11 +29,16 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
 
-    val smsJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/SMS.json")
-    val convJsonRef: StorageReference = storageRef.child("users/${auth.uid}/${Build.ID}/Conversation.json")
+    private lateinit var smsJsonRef: StorageReference
+    private lateinit var convJsonRef: StorageReference
 
     private lateinit var smsFile: File
     private lateinit var convFile: File
+
+    private val deviceID: String by lazy {
+        val id = context?.getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)?.getString("activeDevice", "") ?: ""
+        return@lazy id.substring(id.indexOf("(")+1, id.indexOf(")"))
+    }
 
     private val messagesViewModel: MessagesViewModel by lazy {
         ViewModelProvider(this).get(MessagesViewModel::class.java)
@@ -40,13 +47,17 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Log.d(TAG, "onCreate: fragment Created")
+
+        smsJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/SMS.json")
+        convJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Conversation.json")
+
+        Log.d(TAG, "onCreate: ${"users/${auth.uid}/${deviceID}/SMS.json"}")
+
         smsFile = File(requireContext().filesDir.toString() + "/SMS.json")
         convFile = File(requireContext().filesDir.toString() + "/Conversation.json")
 
         getData()
-
-
-
 
     }
 
@@ -67,7 +78,7 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         mSwipeRefreshLayout = view?.findViewById(R.id.messages_container)
         mSwipeRefreshLayout?.setOnRefreshListener(this)
         mSwipeRefreshLayout?.setColorSchemeColors(
-                R.color.colorPrimary,
+                R.color.colorPrimaryLight,
                 android.R.color.holo_green_dark,
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark)
@@ -82,21 +93,40 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private fun getData() {
         smsJsonRef.getFile(smsFile).addOnSuccessListener {
             Log.d(TAG, "getData: SMS File downloaded")
+            // Initializes the data on MessagesViewModel
+            messagesViewModel.smsFileDownloaded()
+
+            if (messagesViewModel.fileReady()) {
+                initializeRecyclerView()
+            }
+
         }.addOnFailureListener {
             Log.e(TAG, "getData: SMS File failed to download", it)
-            Log.d(TAG, "getData: SMS File failed to download. Retrying once")
-            smsJsonRef.getFile(smsFile)
+
+            val errorCode = (it as StorageException).errorCode
+            if (errorCode != StorageException.ERROR_OBJECT_NOT_FOUND) {
+                Toast.makeText(context, "File failed to load please retry", Toast.LENGTH_SHORT).show()
+            }
+            mSwipeRefreshLayout?.isRefreshing = false
         }
 
         convJsonRef.getFile(convFile).addOnSuccessListener {
             Log.d(TAG, "getData: Conversation File downloaded")
-            messagesViewModel.dataChanged()
-            initializeRecyclerView()
+//            messagesViewModel.dataChanged()
+            messagesViewModel.convFileDownloaded()
+
+            if (messagesViewModel.fileReady()) {
+                initializeRecyclerView()
+            }
 
         }.addOnFailureListener {
             Log.e(TAG, "getData: Conversation File failed to download", it)
-            Log.d(TAG, "getData: Conversation File failed to download. Retrying once")
-            convJsonRef.getFile(convFile)
+
+            val errorCode = (it as StorageException).errorCode
+            if (errorCode != StorageException.ERROR_OBJECT_NOT_FOUND) {
+                Toast.makeText(context, "File failed to load please retry", Toast.LENGTH_SHORT).show()
+            }
+            mSwipeRefreshLayout?.isRefreshing = false
         }
     }
 
@@ -120,4 +150,8 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         getData()
     }
 
+    override fun onDetach() {
+        super.onDetach()
+        Log.d(TAG, "onDetach: Destroyed")
+    }
 }

@@ -9,24 +9,25 @@ import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
+import java.util.*
+import kotlin.collections.HashMap
 
 private const val TAG = "LocationViewModel"
 
 class LocationViewModel(application: Application): AndroidViewModel(application) {
-    private val file = File(application.filesDir.toString() + "/Location.json")
+    private val locationFile = File(application.filesDir.toString() + "/Location.json")
 
-    private val list: MutableLiveData<ArrayList<LocationBaseObject>> by lazy {
-        val liveData = MutableLiveData<ArrayList<LocationBaseObject>>()
-        liveData.value = loadJson(file)
-        return@lazy liveData
+//    private val list: MutableLiveData<ArrayList<LocationBaseObject>> by lazy {
+//        val liveData = MutableLiveData<ArrayList<LocationBaseObject>>()
+//        liveData.value = loadJson(file)
+//        return@lazy liveData
+//    }
 
-    }
+    private val locationList = MutableLiveData<HashMap<Long,ArrayList<LocationBaseObject>>>()
 
-    fun getLocations(): MutableLiveData<ArrayList<LocationBaseObject>> = list
-
-    private fun loadJson(locationFile: File): ArrayList<LocationBaseObject> {
-        // Loads JSON File to ArrayList<SMSObject>
-        var temp = ArrayList<LocationBaseObject>()
+    private fun loadJson(locationFile: File): HashMap<Long,ArrayList<LocationBaseObject>> {
+        // Loads JSON File to HashMap<Long,ArrayList<LocationBaseObject>>
+        var temp = HashMap<Long,ArrayList<LocationBaseObject>>()
 
         val fileReader = FileReader(locationFile)
         val bufferedReader = BufferedReader(fileReader)
@@ -40,9 +41,9 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
         val response = stringBuilder.toString()
 
         if (response != "") {
-            val type = object : TypeToken<ArrayList<LocationBaseObject>>() {}.type
+            val type = object : TypeToken<HashMap<Long,ArrayList<LocationBaseObject>>>() {}.type
             try {
-                temp = Gson().fromJson<ArrayList<LocationBaseObject>>(response, type)
+                temp = Gson().fromJson(response, type)
             } catch (e: Exception) {
                 Log.e(TAG, "loadJson: Error", e)
             }
@@ -51,6 +52,15 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
     }
 
     fun dataChanged() {
-        list.value = loadJson(file)
+        locationList.value = loadJson(locationFile)
+    }
+
+    fun getDates(): SortedSet<Long>? {
+        val dateList = locationList.value?.keys
+        return dateList?.toSortedSet(compareByDescending { it })
+    }
+
+    fun getOneDayData(dayMillis: Long): ArrayList<LocationBaseObject>? {
+        return locationList.value?.get(dayMillis)
     }
 }

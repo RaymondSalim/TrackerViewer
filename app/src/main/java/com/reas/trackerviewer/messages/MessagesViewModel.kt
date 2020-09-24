@@ -18,17 +18,36 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
     private val smsFile = File(application.filesDir.toString() + "/SMS.json")
     private val convFile = File(application.filesDir.toString() + "/Conversation.json")
 
-    private val smsMap: MutableLiveData<HashMap<String, ArrayList<MessagesBaseObject>>> by lazy {
-        val liveData = MutableLiveData<HashMap<String, ArrayList<MessagesBaseObject>>>()
-        liveData.value = loadSMS(smsFile)
-        return@lazy liveData
+//    private val smsMap: MutableLiveData<HashMap<String, ArrayList<MessagesBaseObject>>> by lazy {
+//        val liveData = MutableLiveData<HashMap<String, ArrayList<MessagesBaseObject>>>()
+//        while (!smsFile.exists()) {}
+//        liveData.value = loadSMS(smsFile)
+//        return@lazy liveData
+//    }
+//
+//    private val convMap: MutableLiveData<SortedMap<String, MessagesBaseObject>> by lazy {
+//        val liveData = MutableLiveData<SortedMap<String, MessagesBaseObject>>()
+//        liveData.value = loadConversation(convFile)
+//        return@lazy liveData
+//    }
+
+    private val smsMap = MutableLiveData<HashMap<String, ArrayList<MessagesBaseObject>>>()
+    private val convMap = MutableLiveData<SortedMap<String, MessagesBaseObject>>()
+
+    private var convDownloaded = false
+    private var messagesDownloaded = false
+
+    fun smsFileDownloaded() {
+        smsMap.value = loadSMS(smsFile)
+        messagesDownloaded = true
     }
 
-    private val convMap: MutableLiveData<SortedMap<String, MessagesBaseObject>> by lazy {
-        val liveData = MutableLiveData<SortedMap<String, MessagesBaseObject>>()
-        liveData.value = loadConversation(convFile)
-        return@lazy liveData
+    fun convFileDownloaded() {
+        convMap.value = loadConversation(convFile)
+        convDownloaded = true
     }
+
+    fun fileReady(): Boolean = convDownloaded && messagesDownloaded
 
     fun getSMS(): HashMap<String, ArrayList<MessagesBaseObject>>? = smsMap.value
 
@@ -99,5 +118,10 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
         }
 
         return output.toSortedMap(compareByDescending { output[it]?.mTime })
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d(TAG, "onCleared: cleared")
     }
 }

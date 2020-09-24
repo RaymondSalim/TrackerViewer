@@ -129,7 +129,7 @@ class LocationLiveFragment : Fragment(), OnMapReadyCallback {
         getUpdates()
     }
 
-    private fun loadJson(string: String): CustomLocationObject {
+    private fun loadJson(string: String): CustomLocationObject? {
         // Loads JSON File to CustomLocationObject
         Log.d(TAG, "loadJson: $string")
         val type = object : TypeToken<CustomLocationObject>() {}.type
