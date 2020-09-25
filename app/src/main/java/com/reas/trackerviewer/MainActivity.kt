@@ -50,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-
         initializeFragments(savedInstanceState?.getString("activeFragment"))
         setupToolbar()
         setupDrawer()
@@ -226,15 +225,20 @@ class MainActivity : AppCompatActivity() {
             Context.MODE_PRIVATE
         )
 
+
+
         val deviceList = ArrayList<String>()
         deviceInfoList.forEach {
             deviceList.add("${it.model} (${it.device})")
         }
 
+
+
         val adapter = CustomSpinnerAdapter(applicationContext, R.layout.spinner_row, R.id.spinner_text, android.R.layout.simple_spinner_dropdown_item ,deviceList)
 
         deviceSpinner.adapter = adapter
 
+        deviceSpinner.setSelection(deviceList.indexOf(sharedPref.getString("activeDevice", "")))
 
         deviceSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {

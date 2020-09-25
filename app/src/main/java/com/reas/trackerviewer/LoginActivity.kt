@@ -73,6 +73,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun getDevices() {
         val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/devices")
+        var device: DeviceInfoObject? = null
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
@@ -82,12 +83,11 @@ class LoginActivity : AppCompatActivity() {
                     if (deviceInfoObject != null) {
                         deviceList.add(deviceInfoObject)
                     }
+                     device = deviceList[0]
 
-                    val device = deviceList[0]
-
-                    getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE).edit().putString("activeDevice", "${device.model} (${device.device})").commit()
-                    startMainActivity()
                 }
+                getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE).edit().putString("activeDevice", "${device?.model} (${device?.device})").commit()
+                startMainActivity()
             }
 
             override fun onCancelled(error: DatabaseError) {
