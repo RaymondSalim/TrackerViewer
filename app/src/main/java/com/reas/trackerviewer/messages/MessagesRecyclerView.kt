@@ -7,9 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.reas.trackerviewer.MainActivity
 import com.reas.trackerviewer.R
 import com.reas.trackerviewer.messages.chat.ChatActivity
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,6 +23,10 @@ class MessagesRecyclerView(
     private val list: SortedMap<String, MessagesBaseObject>
 ): RecyclerView.Adapter<MessagesRecyclerView.ViewHolder>() {
     private val layoutInflater = LayoutInflater.from(context)
+    
+    private val smsFile = File(context.filesDir.toString() + "/SMS.json")
+
+    private var fileReady = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(layoutInflater.inflate(R.layout.recyclerview_sms, null, false))
@@ -44,11 +51,18 @@ class MessagesRecyclerView(
         holder.date.text = dateFormat.format(calender.time)
         holder.time.text = timeFormat.format(calender.time)
 
+        val test = context as MainActivity
+        val frag = test.supportFragmentManager.findFragmentByTag("messagesFragment") as MessagesFragment
+
         holder.itemView.setOnClickListener {
-            Log.d(TAG, "onBindViewHolder: Clicked on ${keyList[position]}")
-            val chatIntent = Intent(context, ChatActivity::class.java)
-            chatIntent.putExtra("msgFrom", keyList[position])
-            context.startActivity(chatIntent)
+            if (frag.smsFileDownloaded()) {
+                Log.d(TAG, "onBindViewHolder: Clicked on ${keyList[position]}")
+                val chatIntent = Intent(context, ChatActivity::class.java)
+                chatIntent.putExtra("msgFrom", keyList[position])
+                context.startActivity(chatIntent)
+            } else {
+                Toast.makeText(context, "File is still downloading, please wait", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

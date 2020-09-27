@@ -10,7 +10,6 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.util.*
-import kotlin.collections.HashMap
 
 private const val TAG = "LocationViewModel"
 
@@ -23,11 +22,11 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
 //        return@lazy liveData
 //    }
 
-    private val locationList = MutableLiveData<HashMap<Long,ArrayList<LocationBaseObject>>>()
+    private val locationList = MutableLiveData<ArrayList<LocationBaseObject>>()
 
-    private fun loadJson(locationFile: File): HashMap<Long,ArrayList<LocationBaseObject>> {
-        // Loads JSON File to HashMap<Long,ArrayList<LocationBaseObject>>
-        var temp = HashMap<Long,ArrayList<LocationBaseObject>>()
+    private fun loadJson(locationFile: File): ArrayList<LocationBaseObject> {
+        // Loads JSON File to ArrayList<LocationBaseObject>
+        var temp = ArrayList<LocationBaseObject>()
 
         val fileReader = FileReader(locationFile)
         val bufferedReader = BufferedReader(fileReader)
@@ -41,7 +40,7 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
         val response = stringBuilder.toString()
 
         if (response != "") {
-            val type = object : TypeToken<HashMap<Long,ArrayList<LocationBaseObject>>>() {}.type
+            val type = object : TypeToken<ArrayList<LocationBaseObject>>() {}.type
             try {
                 temp = Gson().fromJson(response, type)
             } catch (e: Exception) {
@@ -53,14 +52,5 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
 
     fun dataChanged() {
         locationList.value = loadJson(locationFile)
-    }
-
-    fun getDates(): SortedSet<Long>? {
-        val dateList = locationList.value?.keys
-        return dateList?.toSortedSet(compareByDescending { it })
-    }
-
-    fun getOneDayData(dayMillis: Long): ArrayList<LocationBaseObject>? {
-        return locationList.value?.get(dayMillis)
     }
 }

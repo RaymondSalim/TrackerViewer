@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -57,6 +58,7 @@ class LocationHistoryFragment : Fragment() {
     private val callback = OnMapReadyCallback { googleMap ->
         mMap = googleMap
         val sydney = LatLng(-34.0, 151.0)
+        googleMap.setPadding(0,0,0, resources.getDimension(R.dimen.bottom_sheet_collapsed).toInt())
         googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
     }
@@ -84,7 +86,6 @@ class LocationHistoryFragment : Fragment() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
         initializeBottomSheet()
-//        toggleBottomSheet()
     }
 
     private fun downloadFile() {
@@ -108,8 +109,27 @@ class LocationHistoryFragment : Fragment() {
     private fun initializeBottomSheet() {
         val bottomSheet = view!!.findViewById<ConstraintLayout>(R.id.bottom_sheet)
 
-        bottomSheet.findViewById<Button>(R.id.header).setOnClickListener {
-            toggleBottomSheet()
+        bottomSheet
+
+        with(bottomSheet) {
+            val calenderView = this.findViewById<ConstraintLayout>(R.id.calenderConstraintLayout)
+            val expandButton = this.findViewById<ImageButton>(R.id.expandButton)
+
+            findViewById<Button>(R.id.header).setOnClickListener {
+                toggleBottomSheet()
+            }
+
+            findViewById<ConstraintLayout>(R.id.baseConstraintLayout).setOnClickListener {
+                if (calenderView.visibility == View.GONE) {
+                    calenderView.visibility = View.VISIBLE
+                    expandButton.setImageResource(R.drawable.ic_baseline_expand_less_24)
+
+                } else {
+                    calenderView.visibility = View.GONE
+                    expandButton.setImageResource(R.drawable.ic_baseline_expand_more_24)
+
+                }
+            }
         }
 
         sheetBehavior = BottomSheetBehavior.from(bottomSheet)
@@ -138,7 +158,7 @@ class LocationHistoryFragment : Fragment() {
             }
 
             fun setMapPaddingBottom(offset: Float) {
-                val maxMapPaddingBottom = resources.getDimension(R.dimen.bottom_sheet_expanded) - resources.getDimension(R.dimen.bottom_sheet_collapsed)
+                val maxMapPaddingBottom = resources.getDimension(R.dimen.bottom_sheet_expanded) - (resources.getDimension(R.dimen.bottom_sheet_collapsed) / 2) //Multiplied by 2 because the initial padding is the same
                 mMap.setPadding(0, 0, 0, ((offset * maxMapPaddingBottom).roundToInt()))
             }
         })

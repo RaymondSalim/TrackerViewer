@@ -18,6 +18,7 @@ import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import com.reas.trackerviewer.R
+import com.reas.trackerviewer.messages.chat.ChatHolder
 import java.io.File
 
 private const val TAG = "MessagesFragment"
@@ -52,13 +53,12 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         smsJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/SMS.json")
         convJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Conversation.json")
 
-        Log.d(TAG, "onCreate: ${"users/${auth.uid}/${deviceID}/SMS.json"}")
 
         smsFile = File(requireContext().filesDir.toString() + "/SMS.json")
         convFile = File(requireContext().filesDir.toString() + "/Conversation.json")
 
-        getData()
 
+        getData()
     }
 
     override fun onCreateView(
@@ -95,6 +95,8 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
             Log.d(TAG, "getData: SMS File downloaded")
             // Initializes the data on MessagesViewModel
             messagesViewModel.smsFileDownloaded()
+            ChatHolder.getInstance().setData(smsFile)
+
 
             if (messagesViewModel.fileReady()) {
                 initializeRecyclerView()
@@ -131,22 +133,24 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     private fun initializeRecyclerView() {
-        val convData = messagesViewModel.getConv()
+        if (messagesViewModel.convFileReady()) {
+            val convData = messagesViewModel.getConv()!!
 
-        var recyclerView: RecyclerView
-        var recyclerViewAdapter: MessagesRecyclerView? = null
-
-        if (convData != null) {
-            recyclerView = view!!.findViewById(R.id.messagesRecyclerView)
-            recyclerViewAdapter = MessagesRecyclerView(requireContext(), convData)
+            var recyclerView: RecyclerView = view!!.findViewById(R.id.messagesRecyclerView)
+            var recyclerViewAdapter = MessagesRecyclerView(requireContext(), convData)
             recyclerView.adapter = recyclerViewAdapter
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        } else {
+            Toast.makeText(context, "File is still downloading, please wait", Toast.LENGTH_SHORT).show()
         }
 
         mSwipeRefreshLayout?.isRefreshing = false
     }
 
     override fun onRefresh() {
+        convFile.delete()
+        smsFile.delete()
         getData()
     }
 
@@ -154,4 +158,6 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         super.onDetach()
         Log.d(TAG, "onDetach: Destroyed")
     }
+
+    fun smsFileDownloaded(): Boolean = messagesViewModel.smsFileReady()
 }

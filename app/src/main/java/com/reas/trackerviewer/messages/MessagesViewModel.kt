@@ -31,14 +31,15 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
 //        return@lazy liveData
 //    }
 
-    private val smsMap = MutableLiveData<HashMap<String, ArrayList<MessagesBaseObject>>>()
+    private var smsMap = HashMap<String, ArrayList<MessagesBaseObject>>()
     private val convMap = MutableLiveData<SortedMap<String, MessagesBaseObject>>()
 
     private var convDownloaded = false
     private var messagesDownloaded = false
 
     fun smsFileDownloaded() {
-        smsMap.value = loadSMS(smsFile)
+        smsMap = loadSMS(smsFile)
+        Log.d(TAG, "smsFileDownloaded: ${Gson().toJson(smsMap)}")
         messagesDownloaded = true
     }
 
@@ -47,12 +48,15 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
         convDownloaded = true
     }
 
+    fun smsFileReady(): Boolean = messagesDownloaded
+
+    fun convFileReady(): Boolean = convDownloaded
+
     fun fileReady(): Boolean = convDownloaded && messagesDownloaded
 
-    fun getSMS(): HashMap<String, ArrayList<MessagesBaseObject>>? = smsMap.value
+    fun getSMS(): HashMap<String, ArrayList<MessagesBaseObject>>? = smsMap
 
     fun getConv(): SortedMap<String, MessagesBaseObject>? = convMap.value
-
 
     private fun loadSMS(file: File): HashMap<String, ArrayList<MessagesBaseObject>> {
         var temp = java.util.HashMap<String, ArrayList<MessagesBaseObject>>()
@@ -107,7 +111,7 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
     }
 
     fun dataChanged() {
-        smsMap.value = loadSMS(smsFile)
+        smsMap = loadSMS(smsFile)
         convMap.value = loadConversation(convFile)
     }
 
