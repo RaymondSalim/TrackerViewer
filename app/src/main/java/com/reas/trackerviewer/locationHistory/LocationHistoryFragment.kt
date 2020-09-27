@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -25,6 +26,7 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import com.reas.trackerviewer.R
 import java.io.File
+import kotlin.math.roundToInt
 
 
 private const val TAG = "LocationHistoryFragment"
@@ -82,7 +84,7 @@ class LocationHistoryFragment : Fragment() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
         initializeBottomSheet()
-        toggleBottomSheet()
+//        toggleBottomSheet()
     }
 
     private fun downloadFile() {
@@ -105,21 +107,41 @@ class LocationHistoryFragment : Fragment() {
 
     private fun initializeBottomSheet() {
         val bottomSheet = view!!.findViewById<ConstraintLayout>(R.id.bottom_sheet)
+
+        bottomSheet.findViewById<Button>(R.id.header).setOnClickListener {
+            toggleBottomSheet()
+        }
+
         sheetBehavior = BottomSheetBehavior.from(bottomSheet)
 
+        // Solution from https://stackoverflow.com/a/52815006/12201419
         sheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
+                Log.d(TAG, "onStateChanged: $newState")
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                Log.d(TAG, "onSlide: $slideOffset")
+//                mMap.setPadding(0, slideOffset.toInt(), 0 , 0)
+//                mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
+                when (sheetBehavior!!.state) {
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        setMapPaddingBottom(slideOffset)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
+                    }
+                    BottomSheetBehavior.STATE_SETTLING -> {
+                        setMapPaddingBottom(slideOffset)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
+                    }
+                    else -> {}
+                }
             }
 
+            fun setMapPaddingBottom(offset: Float) {
+                val maxMapPaddingBottom = resources.getDimension(R.dimen.bottom_sheet_expanded) - resources.getDimension(R.dimen.bottom_sheet_collapsed)
+                mMap.setPadding(0, 0, 0, ((offset * maxMapPaddingBottom).roundToInt()))
+            }
         })
-
-//        bottomSheet.setOnClickListener {
-//            sheetBehavior!!.state = BottomSheetBehavior.STATE_EXPANDED
-//        }
-
     }
 
     private fun toggleBottomSheet() {

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="bottom_sheet_expanded">512dp</dimen>
+    <dimen name="bottom_sheet_collapsed">128dp</dimen>
+</resources>
