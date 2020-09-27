@@ -67,9 +67,7 @@ class LocationLiveFragment : Fragment(), OnMapReadyCallback {
         ref.addValueEventListener(object : ValueEventListener {
             var location: CustomLocationObject? = null
             override fun onDataChange(snapshot: DataSnapshot) {
-                Log.d(TAG, "onDataChange: ${snapshot.value}")
                 location = loadJson(snapshot.value.toString())
-                Log.d(TAG, "onDataChange: $location")
                 setMarker(location, snapshot)
             }
 

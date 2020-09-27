@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CalendarView
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -112,23 +113,29 @@ class LocationHistoryFragment : Fragment() {
         bottomSheet
 
         with(bottomSheet) {
-            val calenderView = this.findViewById<ConstraintLayout>(R.id.calenderConstraintLayout)
+            val calendarLayout = this.findViewById<ConstraintLayout>(R.id.calendarConstraintLayout)
             val expandButton = this.findViewById<ImageButton>(R.id.expandButton)
+            val calendarView = this.findViewById<CalendarView>(R.id.calendarView)
 
             findViewById<Button>(R.id.header).setOnClickListener {
                 toggleBottomSheet()
             }
 
             findViewById<ConstraintLayout>(R.id.baseConstraintLayout).setOnClickListener {
-                if (calenderView.visibility == View.GONE) {
-                    calenderView.visibility = View.VISIBLE
+                if (calendarLayout.visibility == View.GONE) {
+                    calendarLayout.visibility = View.VISIBLE
                     expandButton.setImageResource(R.drawable.ic_baseline_expand_less_24)
 
                 } else {
-                    calenderView.visibility = View.GONE
+                    calendarLayout.visibility = View.GONE
                     expandButton.setImageResource(R.drawable.ic_baseline_expand_more_24)
 
                 }
+            }
+
+            calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+                val newDate = "$dayOfMonth $month $year"
+
             }
         }
 
@@ -137,11 +144,9 @@ class LocationHistoryFragment : Fragment() {
         // Solution from https://stackoverflow.com/a/52815006/12201419
         sheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                Log.d(TAG, "onStateChanged: $newState")
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                Log.d(TAG, "onSlide: $slideOffset")
 //                mMap.setPadding(0, slideOffset.toInt(), 0 , 0)
 //                mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
                 when (sheetBehavior!!.state) {

@@ -52,14 +52,12 @@ class SettingsActivity : AppCompatActivity() {
 
             ref?.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    Log.d(TAG, "onDataChange: new value ${snapshot.value}")
 //                    val pm = getDefaultSharedPreferences(context)
 //                    pm.edit().putString("locationInterval", snapshot.value.toString())
 
 //                    preferenceManager.preferenceDataStore?.putString("locationInterval", snapshot.value.toString())
 //                    preferenceScreen.sharedPreferences.edit().putString("locationInterval", snapshot.value.toString())
 //                    preferenceManager.sharedPreferences.edit().putString("locationInterval", snapshot.value.toString())
-//                    preferenceScreen.prefe
 
                     settings.edit().putString("locationInterval", snapshot.value.toString()).apply()
 

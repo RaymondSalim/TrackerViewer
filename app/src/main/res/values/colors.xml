@@ -6,6 +6,7 @@
 
     <color name="bottom_sheet_header">@android:color/darker_gray</color>
     <color name="textColor">#000000</color>
+    <color name="secondaryTextColor">#575757</color>
 
     <color name="header_start">#4DD0E1</color>
     <color name="header_center">#80DEEA</color>

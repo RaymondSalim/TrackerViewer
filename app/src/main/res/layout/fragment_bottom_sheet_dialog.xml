@@ -70,13 +70,14 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/calenderConstraintLayout"
+                    android:id="@+id/calendarConstraintLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
                     tools:visibility="visible">
 
                 <CalendarView
+                        android:id="@+id/calendarView"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toStartOf="parent"
                         android:layout_width="match_parent"
