@@ -9,12 +9,13 @@ import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
-import java.util.*
 
 private const val TAG = "LocationViewModel"
 
 class LocationViewModel(application: Application): AndroidViewModel(application) {
     private val locationFile = File(application.filesDir.toString() + "/Location.json")
+
+    private var fileReady = false
 
 //    private val list: MutableLiveData<ArrayList<LocationBaseObject>> by lazy {
 //        val liveData = MutableLiveData<ArrayList<LocationBaseObject>>()
@@ -50,7 +51,17 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
         return temp
     }
 
+    fun fileReady() {
+        fileReady = true
+    }
+
     fun dataChanged() {
         locationList.value = loadJson(locationFile)
+    }
+
+    fun filterList(time: Long): ArrayList<LocationBaseObject> {
+        return locationList.value?.filter {
+            it.mTime >= time && it.mTime < (time + 86400000)
+        } as ArrayList<LocationBaseObject>
     }
 }
