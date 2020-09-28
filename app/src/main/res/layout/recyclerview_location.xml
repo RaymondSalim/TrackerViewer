@@ -32,6 +32,7 @@
             tools:text="Jl. Letjen S. Parman Kav 21"/>
 
     <ImageView
+            android:id="@+id/imageIcon"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:paddingTop="6dp"

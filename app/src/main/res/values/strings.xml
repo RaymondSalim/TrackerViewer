@@ -32,9 +32,15 @@
 
     <string name="apply">Apply</string>
 
+
+    <!--    Location History Fragment-->
+    <string name="no_location">No location recorded for this date</string>
+
+
     <!-- Preference Titles -->
     <string name="location_header">Location</string>
     <string name="sync_header">Sync</string>
+
 
     <!-- Messages Preferences -->
     <string name="location_title">Location Interval</string>
