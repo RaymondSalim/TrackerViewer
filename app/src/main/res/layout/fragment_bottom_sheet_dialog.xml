@@ -9,7 +9,8 @@
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         app:behavior_hideable="false"
         app:behavior_peekHeight="@dimen/bottom_sheet_collapsed"
-        android:background="@drawable/bottom_dialog_shape">
+        android:background="@drawable/bottom_dialog_shape"
+        app:layout_constraintBottom_toBottomOf="parent" >
 
     <Button
             android:id="@+id/header"
@@ -32,9 +33,10 @@
             app:layout_constraintEnd_toEndOf="parent" >
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+                android:id="@+id/linearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
 
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/baseConstraintLayout"
@@ -74,7 +76,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
-                    tools:visibility="visible">
+                    tools:visibility="visible"
+                    >
 
                 <CalendarView
                         android:id="@+id/calendarView"
@@ -89,8 +92,22 @@
 
     </androidx.cardview.widget.CardView>
 
+    <TextView
+            android:id="@+id/empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:text="@string/no_location"
+            android:textColor="@color/textColor"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/cardView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:padding="16dp" />
 
     <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/locationRecyclerView"
             android:padding="12dp"
             app:layout_constraintTop_toBottomOf="@id/cardView"
             app:layout_constraintBottom_toBottomOf="parent"
