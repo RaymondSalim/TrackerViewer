@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
@@ -63,5 +64,10 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
         return locationList.value?.filter {
             it.mTime >= time && it.mTime < (time + 86400000)
         } as ArrayList<LocationBaseObject>
+    }
+
+    fun lastLocation(): LatLng {
+        val data = locationList.value!![locationList.value!!.size - 1]
+        return LatLng(data.mLatitude, data.mLongitude)
     }
 }
