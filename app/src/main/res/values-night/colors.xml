@@ -3,6 +3,11 @@
     <color name="colorPrimaryLight">@android:color/background_dark</color>
     <color name="colorPrimaryDark">@android:color/background_dark</color>
     <color name="colorAccent">#03DAC5</color>
+
+    <color name="bottom_sheet_header">@android:color/darker_gray</color>
+    <color name="textColor">#FFFFFF</color>
+    <color name="secondaryTextColor">#B5B5B5</color>
+
     <color name="header_start">#4DD0E1</color>
     <color name="header_center">#80DEEA</color>
 </resources>
