@@ -122,17 +122,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeFragments(active: String?) {
-        fragmentManager.beginTransaction().add(R.id.content_main, messagesFragment, "messagesFragment").hide(
-            messagesFragment
-        ).commit()
+
+        if (fragmentManager.fragments.isNotEmpty()) {
+            for (fragments in fragmentManager.fragments) {
+                fragmentManager.beginTransaction().hide(fragments).commitNow()
+            }
+        }
+
+        fragmentManager.beginTransaction().add(R.id.content_main, messagesFragment, "messagesFragment").hide(messagesFragment).commit()
         fragmentManager.beginTransaction().add(R.id.content_main, callFragments, "callFragment").hide(callFragments).commit()
         fragmentManager.beginTransaction().add(R.id.content_main, ussdFragment, "ussdFragment").hide(ussdFragment).commit()
-        fragmentManager.beginTransaction().add(R.id.content_main, locationHistoryFragments, "locationHistoryFragment").hide(
-            locationHistoryFragments
-        ).commit()
-        fragmentManager.beginTransaction().add(R.id.content_main, locationLiveFragment, "locationLiveFragment").hide(
-            locationLiveFragment
-        ).commit()
+        fragmentManager.beginTransaction().add(R.id.content_main, locationHistoryFragments, "locationHistoryFragment").hide(locationHistoryFragments).commit()
+        fragmentManager.beginTransaction().add(R.id.content_main, locationLiveFragment, "locationLiveFragment").hide(locationLiveFragment).commit()
 
         fragmentManager.executePendingTransactions()
 
@@ -324,7 +325,5 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
-
 
 }
