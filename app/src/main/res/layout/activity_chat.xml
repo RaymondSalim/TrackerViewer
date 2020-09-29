@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         tools:context=".messages.chat.ChatActivity">
 
-    <Toolbar
+    <androidx.appcompat.widget.Toolbar
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_width="match_parent"
