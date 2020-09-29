@@ -59,12 +59,10 @@ class LocationHistoryFragment : Fragment() {
 
     private var today: Long = 0
 
+    private var lastLocation: LatLng? = LatLng(0.0, 0.0)
+
     private val callback = OnMapReadyCallback { googleMap ->
         mMap = googleMap
-        val sydney = LatLng(-34.0, 151.0)
-        googleMap.setPadding(0,0,0, resources.getDimension(R.dimen.bottom_sheet_collapsed).toInt())
-        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
     }
 
     private lateinit var mMap: GoogleMap
@@ -76,8 +74,7 @@ class LocationHistoryFragment : Fragment() {
 
         // Finds the current date
         getTime()
-
-
+        
         downloadFile()
     }
 
@@ -90,6 +87,7 @@ class LocationHistoryFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d(TAG, "onViewCreated: ")
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
@@ -101,6 +99,10 @@ class LocationHistoryFragment : Fragment() {
             Log.d(TAG, "getData: Location File downloaded successfully")
             locationViewModel.fileReady()
             locationViewModel.dataChanged()
+
+            lastLocation = locationViewModel.lastLocation()
+            mMap.addMarker(MarkerOptions().position(lastLocation!!))
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastLocation, 15F))
 
         }.addOnFailureListener {
             Log.d(TAG, "getData: Location File failed to download")
@@ -114,6 +116,36 @@ class LocationHistoryFragment : Fragment() {
 
     private fun initializeBottomSheet() {
         val bottomSheet = view!!.findViewById<ConstraintLayout>(R.id.bottom_sheet)
+
+        sheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+        // Solution from https://stackoverflow.com/a/52815006/12201419
+        sheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+//                mMap.setPadding(0, slideOffset.toInt(), 0 , 0)
+//                mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
+                when (sheetBehavior!!.state) {
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        setMapPaddingBottom(slideOffset)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(lastLocation))
+                    }
+                    BottomSheetBehavior.STATE_SETTLING -> {
+                        setMapPaddingBottom(slideOffset)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(lastLocation))
+                    }
+                    else -> {}
+                }
+            }
+
+            fun setMapPaddingBottom(offset: Float) {
+                val maxMapPaddingBottom = resources.getDimension(R.dimen.bottom_sheet_expanded) - (resources.getDimension(R.dimen.bottom_sheet_collapsed) / 2) //Multiplied by 2 because the initial padding is the same
+                mMap.setPadding(0, 0, 0, ((offset * maxMapPaddingBottom).roundToInt()))
+            }
+        })
+
 
         with(bottomSheet) {
             val calendarLayout = this.findViewById<ConstraintLayout>(R.id.calendarConstraintLayout)
@@ -135,17 +167,19 @@ class LocationHistoryFragment : Fragment() {
 
             findViewById<ConstraintLayout>(R.id.baseConstraintLayout).setOnClickListener {
                 if (calendarLayout.visibility == View.GONE) {
-                    calendarLayout.visibility = View.VISIBLE
+                    if (sheetBehavior!!.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                        sheetBehavior!!.state = BottomSheetBehavior.STATE_EXPANDED
+                    }
+                        calendarLayout.visibility = View.VISIBLE
                     expandButton.setImageResource(R.drawable.ic_baseline_expand_less_24)
 
                 } else {
                     calendarLayout.visibility = View.GONE
-
                     expandButton.setImageResource(R.drawable.ic_baseline_expand_more_24)
-
                 }
             }
 
+            dateTextView.text = "Today"
 
             calendarView.maxDate = today
 
@@ -177,35 +211,6 @@ class LocationHistoryFragment : Fragment() {
 
             }
         }
-
-        sheetBehavior = BottomSheetBehavior.from(bottomSheet)
-
-        // Solution from https://stackoverflow.com/a/52815006/12201419
-        sheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-//                mMap.setPadding(0, slideOffset.toInt(), 0 , 0)
-//                mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
-                when (sheetBehavior!!.state) {
-                    BottomSheetBehavior.STATE_DRAGGING -> {
-                        setMapPaddingBottom(slideOffset)
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
-                    }
-                    BottomSheetBehavior.STATE_SETTLING -> {
-                        setMapPaddingBottom(slideOffset)
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(-34.0, 151.0)))
-                    }
-                    else -> {}
-                }
-            }
-
-            fun setMapPaddingBottom(offset: Float) {
-                val maxMapPaddingBottom = resources.getDimension(R.dimen.bottom_sheet_expanded) - (resources.getDimension(R.dimen.bottom_sheet_collapsed) / 2) //Multiplied by 2 because the initial padding is the same
-                mMap.setPadding(0, 0, 0, ((offset * maxMapPaddingBottom).roundToInt()))
-            }
-        })
     }
 
     private fun initializeRecyclerView(data: ArrayList<LocationBaseObject>) {
@@ -213,7 +218,6 @@ class LocationHistoryFragment : Fragment() {
         var adapter = LocationHistoryRecyclerView(requireContext(), data)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
     }
 
     private fun toggleBottomSheet() {
@@ -241,5 +245,16 @@ class LocationHistoryFragment : Fragment() {
 
         today = calendar.timeInMillis
 //        Log.d(TAG, "getTime: $today")
+    }
+
+    fun setMap(address: LocationGeocoderObject) {
+        mMap.clear()
+        mMap.addMarker(MarkerOptions().position(address.latLng).title(address.name))
+//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(address.latLng, 15F))
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(address.latLng, 15F))
+    }
+
+    fun setLastLocation(latLng: LatLng) {
+        lastLocation = latLng
     }
 }
