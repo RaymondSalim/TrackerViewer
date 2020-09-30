@@ -56,8 +56,9 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         smsFile = File(requireContext().filesDir.toString() + "/SMS.json")
         convFile = File(requireContext().filesDir.toString() + "/Conversation.json")
 
-
-        getData()
+        if (!(smsFile.exists() || convFile.exists())) {
+            getData()
+        }
     }
 
     override fun onCreateView(
@@ -65,12 +66,24 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        if (smsFile.exists() && convFile.exists()) {
+            messagesViewModel.smsFileDownloaded()
+            ChatHolder.getInstance().setData(smsFile)
+
+            messagesViewModel.convFileDownloaded()
+
+
+        }
         return inflater.inflate(R.layout.fragment_messages, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeSwipeLayout()
+
+        if (smsFile.exists() && convFile.exists()) {
+            initializeRecyclerView()
+        }
     }
 
     private fun initializeSwipeLayout() {

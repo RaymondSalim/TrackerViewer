@@ -51,7 +51,13 @@ class USSDFragment : Fragment() {
 
         ussdFile = File(requireContext().filesDir.toString() + "/USSD.json")
 
-        getData()
+        if (ussdFile.exists()) {
+            ussdViewModel.dataChanged()
+            data = ussdViewModel.getMap()
+            initializeRecyclerView()
+        } else {
+            getData()
+        }
     }
 
     override fun onCreateView(

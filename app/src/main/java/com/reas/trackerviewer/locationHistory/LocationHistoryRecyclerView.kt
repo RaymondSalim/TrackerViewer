@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
 import com.reas.trackerviewer.MainActivity
 import com.reas.trackerviewer.R
+import java.text.SimpleDateFormat
 import java.util.*
 
 class LocationHistoryRecyclerView (
@@ -29,6 +30,7 @@ class LocationHistoryRecyclerView (
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val currentData = data[position]
 //        holder.bind(currentData)
+        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         holder.latitude = currentData.mLatitude
         holder.longitude = currentData.mLongitude
@@ -36,6 +38,7 @@ class LocationHistoryRecyclerView (
         val currentAddress = geoCoder.getFromLocation(currentData.mLatitude, currentData.mLongitude, 1)
         holder.name.text = currentAddress[0].featureName ?: ""
         holder.address.text = currentAddress[0].getAddressLine(0)
+        holder.time.text = format.format(currentData.mTime)
 
         holder.itemView.setOnClickListener {
             Toast.makeText(context, "${holder.name.text}", Toast.LENGTH_SHORT).show()
@@ -50,6 +53,7 @@ class LocationHistoryRecyclerView (
     inner class Holder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val name = itemView.findViewById<TextView>(R.id.name)
         val address = itemView.findViewById<TextView>(R.id.address)
+        val time = itemView.findViewById<TextView>(R.id.time)
         val mapsIcon = itemView.findViewById<ImageView>(R.id.imageIcon)
         var latitude = 0.0
         var longitude = 0.0

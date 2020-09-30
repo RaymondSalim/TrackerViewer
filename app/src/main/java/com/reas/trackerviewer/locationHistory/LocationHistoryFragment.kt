@@ -50,6 +50,9 @@ class LocationHistoryFragment : Fragment() {
     private var recyclerView: RecyclerView? = null
     private var progressBar: ProgressBar? = null
     private var calendarView: CalendarView? = null
+    private var baseView: View? = null
+
+    private var localFile = false
 
     private lateinit var locationFile: File
     private val locationViewModel: LocationViewModel by lazy {
@@ -73,6 +76,11 @@ class LocationHistoryFragment : Fragment() {
 
         // Prevents map moving to marker when sliding bottomsheetdialog
         mMap.setOnCameraMoveListener { setLastLocation(mMap.cameraPosition.target) }
+
+        if (localFile) {
+            mMap?.addMarker(MarkerOptions().position(lastLocation!!))
+            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(lastLocation, 17F))
+        }
     }
 
     private lateinit var mMap: GoogleMap
@@ -91,22 +99,36 @@ class LocationHistoryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_location, container, false)
+        baseView = inflater.inflate(R.layout.fragment_location, container, false)
 
-        emptyTextView = view.findViewById(R.id.empty)
-        recyclerView = view.findViewById(R.id.locationRecyclerView)
-        progressBar = view.findViewById(R.id.progressBar)
-        progressText = view.findViewById(R.id.progressText)
-        calendarView = view!!.findViewById(R.id.calendarView)
-        dateTextView = view!!.findViewById(R.id.date)
-        linearLayoutDownload = view!!.findViewById(R.id.downloadingLayout)
+        emptyTextView = baseView!!.findViewById(R.id.empty)
+        recyclerView = baseView!!.findViewById(R.id.locationRecyclerView)
+        progressBar = baseView!!.findViewById(R.id.progressBar)
+        progressText = baseView!!.findViewById(R.id.progressText)
+        calendarView = baseView!!.findViewById(R.id.calendarView)
+        dateTextView = baseView!!.findViewById(R.id.date)
+        linearLayoutDownload = baseView!!.findViewById(R.id.downloadingLayout)
         
         dateTextView!!.text = "Today"
         calendarView!!.maxDate = today
 
-        downloadFile()
+        if (locationFile.exists()) {
+            localFile = true
+
+            locationViewModel.setFileReady()
+            locationViewModel.dataChanged()
+
+            linearLayoutDownload?.visibility = View.GONE
+
+            initializeBottomSheet()
+
+
+            lastLocation = locationViewModel.lastLocation()
+        } else {
+            downloadFile()
+        }
         
-        return view
+        return baseView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -150,7 +172,7 @@ class LocationHistoryFragment : Fragment() {
     }
 
     private fun initializeBottomSheet() {
-        val bottomSheet = view!!.findViewById<ConstraintLayout>(R.id.bottom_sheet)
+        val bottomSheet = baseView!!.findViewById<ConstraintLayout>(R.id.bottom_sheet)
 
         sheetBehavior = BottomSheetBehavior.from(bottomSheet)
 
@@ -182,10 +204,10 @@ class LocationHistoryFragment : Fragment() {
         })
 
 
-        val calendarLayout = view!!.findViewById<ConstraintLayout>(R.id.calendarConstraintLayout)
-        val expandButton = view!!.findViewById<ImageButton>(R.id.expandButton)
+        val calendarLayout = baseView!!.findViewById<ConstraintLayout>(R.id.calendarConstraintLayout)
+        val expandButton = baseView!!.findViewById<ImageButton>(R.id.expandButton)
 
-        val linearLayout = view!!.findViewById<LinearLayout>(R.id.linearLayout)
+        val linearLayout = baseView!!.findViewById<LinearLayout>(R.id.linearLayout)
 
 
         // See https://stackoverflow.com/a/39462475/12201419 why the transition is not set on the xml layout file
@@ -193,11 +215,11 @@ class LocationHistoryFragment : Fragment() {
         transition.setAnimateParentHierarchy(false)
         linearLayout.layoutTransition = transition
 
-        view!!.findViewById<Button>(R.id.header).setOnClickListener {
+        baseView!!.findViewById<Button>(R.id.header).setOnClickListener {
             toggleBottomSheet()
         }
 
-        view!!.findViewById<ConstraintLayout>(R.id.baseConstraintLayout).setOnClickListener {
+        baseView!!.findViewById<ConstraintLayout>(R.id.baseConstraintLayout).setOnClickListener {
             if (calendarLayout.visibility == View.GONE) {
                     if (sheetBehavior!!.state == BottomSheetBehavior.STATE_COLLAPSED) {
                         sheetBehavior!!.state = BottomSheetBehavior.STATE_EXPANDED
@@ -258,7 +280,7 @@ class LocationHistoryFragment : Fragment() {
             emptyTextView?.visibility = View.GONE
             recyclerView?.visibility = View.VISIBLE
 
-            var recyclerView = view!!.findViewById<RecyclerView>(R.id.locationRecyclerView)
+            var recyclerView = baseView!!.findViewById<RecyclerView>(R.id.locationRecyclerView)
             var adapter = LocationHistoryRecyclerView(requireContext(), filteredList)
             recyclerView.adapter = adapter
             recyclerView.layoutManager = LinearLayoutManager(requireContext())

@@ -45,10 +45,12 @@ class CallsFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         callJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Calls.json")
         callFile = File(requireContext().filesDir.toString() + "/Calls.json")
 
-        getData()
-
-
-
+        if (callFile.exists()) {
+            callViewModel.dataChanged()
+            callData = callViewModel.getMap()
+        } else {
+            getData()
+        }
     }
 
     override fun onCreateView(
@@ -61,6 +63,7 @@ class CallsFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initializeRecyclerView()
         initializeSwipeLayout()
     }
 
