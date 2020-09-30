@@ -108,6 +108,38 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:padding="16dp" />
 
+    <LinearLayout
+            android:id="@+id/downloadingLayout"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/cardView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+                android:id="@+id/progressText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/downloading"
+                android:layout_gravity="center_horizontal" />
+
+        <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                style="@android:style/Widget.Material.ProgressBar.Horizontal"/>
+
+
+
+
+
+    </LinearLayout>
+
+
+
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/locationRecyclerView"
             android:padding="12dp"
