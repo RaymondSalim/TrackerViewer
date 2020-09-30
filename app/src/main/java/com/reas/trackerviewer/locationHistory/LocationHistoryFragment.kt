@@ -43,6 +43,13 @@ class LocationHistoryFragment : Fragment() {
     private lateinit var locationJsonRef: StorageReference
 
     private var sheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
+    private var linearLayoutDownload: LinearLayout? = null
+    private var emptyTextView: TextView? = null
+    private var dateTextView: TextView? = null
+    private var progressText: TextView? = null
+    private var recyclerView: RecyclerView? = null
+    private var progressBar: ProgressBar? = null
+    private var calendarView: CalendarView? = null
 
     private lateinit var locationFile: File
     private val locationViewModel: LocationViewModel by lazy {
@@ -63,6 +70,9 @@ class LocationHistoryFragment : Fragment() {
 
     private val callback = OnMapReadyCallback { googleMap ->
         mMap = googleMap
+
+        // Prevents map moving to marker when sliding bottomsheetdialog
+        mMap.setOnCameraMoveListener { setLastLocation(mMap.cameraPosition.target) }
     }
 
     private lateinit var mMap: GoogleMap
@@ -74,8 +84,6 @@ class LocationHistoryFragment : Fragment() {
 
         // Finds the current date
         getTime()
-        
-        downloadFile()
     }
 
     override fun onCreateView(
@@ -83,22 +91,45 @@ class LocationHistoryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_location, container, false)
+        val view = inflater.inflate(R.layout.fragment_location, container, false)
+
+        emptyTextView = view.findViewById(R.id.empty)
+        recyclerView = view.findViewById(R.id.locationRecyclerView)
+        progressBar = view.findViewById(R.id.progressBar)
+        progressText = view.findViewById(R.id.progressText)
+        calendarView = view!!.findViewById(R.id.calendarView)
+        dateTextView = view!!.findViewById(R.id.date)
+        linearLayoutDownload = view!!.findViewById(R.id.downloadingLayout)
+        
+        dateTextView!!.text = "Today"
+        calendarView!!.maxDate = today
+
+        downloadFile()
+        
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Log.d(TAG, "onViewCreated: ")
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
-        initializeBottomSheet()
+
+
+
     }
 
     private fun downloadFile() {
+        progressBar?.isIndeterminate = false
+
         locationJsonRef.getFile(locationFile).addOnSuccessListener {
             Log.d(TAG, "getData: Location File downloaded successfully")
-            locationViewModel.fileReady()
+            locationViewModel.setFileReady()
             locationViewModel.dataChanged()
+
+            linearLayoutDownload?.visibility = View.GONE
+
+            initializeBottomSheet()
+
 
             lastLocation = locationViewModel.lastLocation()
             mMap.addMarker(MarkerOptions().position(lastLocation!!))
@@ -111,6 +142,10 @@ class LocationHistoryFragment : Fragment() {
             if (errorCode != StorageException.ERROR_OBJECT_NOT_FOUND) {
                 Toast.makeText(context, "File failed to load please retry", Toast.LENGTH_SHORT).show()
             }
+        }.addOnProgressListener {
+            val fileSize = it.totalByteCount.toFloat()
+            val progress = it.bytesTransferred.toFloat()
+            progressBar!!.progress = (100 * (progress/fileSize)).toInt()
         }
     }
 
@@ -147,26 +182,23 @@ class LocationHistoryFragment : Fragment() {
         })
 
 
-        with(bottomSheet) {
-            val calendarLayout = this.findViewById<ConstraintLayout>(R.id.calendarConstraintLayout)
-            val expandButton = this.findViewById<ImageButton>(R.id.expandButton)
-            val calendarView = this.findViewById<CalendarView>(R.id.calendarView)
-            val dateTextView = this.findViewById<TextView>(R.id.date)
-            val emptyTextView = this.findViewById<TextView>(R.id.empty)
-            val recyclerView = this.findViewById<RecyclerView>(R.id.locationRecyclerView)
-            val linearLayout = this.findViewById<LinearLayout>(R.id.linearLayout)
+        val calendarLayout = view!!.findViewById<ConstraintLayout>(R.id.calendarConstraintLayout)
+        val expandButton = view!!.findViewById<ImageButton>(R.id.expandButton)
 
-            // See https://stackoverflow.com/a/39462475/12201419 why the transition is not set on the xml layout file
-            val transition = LayoutTransition()
-            transition.setAnimateParentHierarchy(false)
-            linearLayout.layoutTransition = transition
+        val linearLayout = view!!.findViewById<LinearLayout>(R.id.linearLayout)
 
-            findViewById<Button>(R.id.header).setOnClickListener {
-                toggleBottomSheet()
-            }
 
-            findViewById<ConstraintLayout>(R.id.baseConstraintLayout).setOnClickListener {
-                if (calendarLayout.visibility == View.GONE) {
+        // See https://stackoverflow.com/a/39462475/12201419 why the transition is not set on the xml layout file
+        val transition = LayoutTransition()
+        transition.setAnimateParentHierarchy(false)
+        linearLayout.layoutTransition = transition
+
+        view!!.findViewById<Button>(R.id.header).setOnClickListener {
+            toggleBottomSheet()
+        }
+
+        view!!.findViewById<ConstraintLayout>(R.id.baseConstraintLayout).setOnClickListener {
+            if (calendarLayout.visibility == View.GONE) {
                     if (sheetBehavior!!.state == BottomSheetBehavior.STATE_COLLAPSED) {
                         sheetBehavior!!.state = BottomSheetBehavior.STATE_EXPANDED
                     }
@@ -179,45 +211,58 @@ class LocationHistoryFragment : Fragment() {
                 }
             }
 
-            dateTextView.text = "Today"
 
-            calendarView.maxDate = today
+        initializeRecyclerView(today)
 
-            calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
-                // Closes the CalenderView
-                calendarLayout.visibility = View.GONE
+        calendarView!!.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            // Closes the CalenderView
+            calendarLayout.visibility = View.GONE
 
-                val date = Calendar.getInstance()
-                date.set(year, month, dayOfMonth, 0, 0, 0)
+            val date = Calendar.getInstance()
+            date.set(year, month, dayOfMonth, 0, 0, 0)
 
-                val filteredList = locationViewModel.filterList(date.timeInMillis)
-                if (filteredList.isEmpty()) {
-                    emptyTextView.visibility = View.VISIBLE
-                    recyclerView.visibility = View.GONE
-                } else {
-                    emptyTextView.visibility = View.GONE
-                    recyclerView.visibility = View.VISIBLE
+//               initializeBottomSheet() val filteredList = locationViewModel.filterList(date.timeInMillis)
+//                if (filteredList.isEmpty()) {
+//                    emptyTextView?.visibility = View.VISIBLE
+//                    recyclerView?.visibility = View.GONE
+//                } else {
+//                    emptyTextView?.visibility = View.GONE
+//                    recyclerView?.visibility = View.VISIBLE
+//
+//                    initializeRecyclerView(filteredList)
+//                }
 
-                    initializeRecyclerView(filteredList)
-                }
+            initializeRecyclerView(date.timeInMillis)
+//                initializeRecyclerView(1601398800772)
 
 
-                if (date.timeInMillis >= today) {
-                    dateTextView.text = "Today"
-                } else {
-                    val format = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
-                    dateTextView.text = format.format(date.timeInMillis)
-                }
-
+            // Ignores miliseconds
+            if ((date.timeInMillis / 1000).toInt() >= (today/1000).toInt()) {
+                dateTextView!!.text = "Today"
+            } else {
+                val format = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+                dateTextView!!.text = format.format(date.timeInMillis)
             }
+
         }
     }
 
-    private fun initializeRecyclerView(data: ArrayList<LocationBaseObject>) {
-        var recyclerView = view!!.findViewById<RecyclerView>(R.id.locationRecyclerView)
-        var adapter = LocationHistoryRecyclerView(requireContext(), data)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    private fun initializeRecyclerView(time:Long) {
+        progressBar?.isIndeterminate = true
+        progressText?.text = getString(R.string.processing)
+        val filteredList = locationViewModel.filterList(time)
+        if (filteredList?.isEmpty() != false) {
+            emptyTextView?.visibility = View.VISIBLE
+            recyclerView?.visibility = View.GONE
+        } else {
+            emptyTextView?.visibility = View.GONE
+            recyclerView?.visibility = View.VISIBLE
+
+            var recyclerView = view!!.findViewById<RecyclerView>(R.id.locationRecyclerView)
+            var adapter = LocationHistoryRecyclerView(requireContext(), filteredList)
+            recyclerView.adapter = adapter
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        }
     }
 
     private fun toggleBottomSheet() {
@@ -251,7 +296,7 @@ class LocationHistoryFragment : Fragment() {
         mMap.clear()
         mMap.addMarker(MarkerOptions().position(address.latLng).title(address.name))
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(address.latLng, 15F))
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(address.latLng, 15F))
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(address.latLng, 17F))
     }
 
     fun setLastLocation(latLng: LatLng) {
