@@ -1,7 +1,6 @@
 package com.reas.trackerviewer.calls
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
@@ -9,7 +8,6 @@ import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
-import java.lang.StringBuilder
 
 private const val TAG = "CallViewModel"
 
@@ -21,10 +19,6 @@ class CallViewModel(application: Application) : AndroidViewModel(application) {
         liveData.value = loadJson(file)
         return@lazy liveData
         }
-
-    init {
-        Log.d(TAG, "ViewmodelCalled: ")
-    }
 
     fun dataChanged() {
         callMap.value = loadJson(file)

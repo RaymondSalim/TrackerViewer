@@ -47,7 +47,6 @@ class USSDFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("USSDFragment", "onCreate: ")
         ussdJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/USSD.json")
 
         ussdFile = File(requireContext().filesDir.toString() + "/USSD.json")

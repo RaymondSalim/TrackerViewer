@@ -48,7 +48,6 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Log.d(TAG, "onCreate: fragment Created")
 
         smsJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/SMS.json")
         convJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Conversation.json")
@@ -152,11 +151,6 @@ class MessagesFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         convFile.delete()
         smsFile.delete()
         getData()
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.d(TAG, "onDetach: Destroyed")
     }
 
     fun smsFileDownloaded(): Boolean = messagesViewModel.smsFileReady()

@@ -80,19 +80,13 @@ class LocationLiveFragment : Fragment(), OnMapReadyCallback {
 
     private fun setMarker(locationObject: CustomLocationObject?, snapshot: DataSnapshot) {
         val key = snapshot.key
-        Log.d(TAG, "setMarker: ${locationObject.toString()}")
 //        val value: HashMap<String, Any> = dataSnapshot.value as HashMap<String, Any>
 //        val value = HashMap<String, Any>()
 //        val value = dataSnapshot.value as HashMap<String, Any>
 
 //        val value = mapOf(Pair(dataSnapshot.key, dataSnapshot.value))
-//        Log.d(TAG, "setMarker: KEY: ${dataSnapshot.key}")
 //
-//        Log.d(TAG, "setMarker: VALUE: ${dataSnapshot.value}")
 
-//        value.forEach {
-//            Log.d(TAG, "setMarker: ${it.key} , ${it.value}")
-//        }
 //        val lat = value["latitude"].toString().toDouble()
 //        val lng = value["longitude"].toString().toDouble()
         val lat = locationObject?.latitude
@@ -129,10 +123,8 @@ class LocationLiveFragment : Fragment(), OnMapReadyCallback {
 
     private fun loadJson(string: String): CustomLocationObject? {
         // Loads JSON File to CustomLocationObject
-        Log.d(TAG, "loadJson: $string")
         val type = object : TypeToken<CustomLocationObject>() {}.type
         val ans = Gson().fromJson<CustomLocationObject>(string, type)
-        Log.d(TAG, "loadJson: $ans")
         return ans
     }
 }

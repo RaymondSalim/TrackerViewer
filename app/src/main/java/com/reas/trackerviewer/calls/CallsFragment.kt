@@ -108,7 +108,6 @@ class CallsFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
             android.R.color.holo_blue_dark)
 
         mSwipeRefreshLayout?.post {
-            Log.d("TEST", "initializeSwipeLayout: runnable")
             mSwipeRefreshLayout?.isRefreshing = true
 
             getData()
@@ -116,7 +115,6 @@ class CallsFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     override fun onRefresh() {
-        Log.d("TEST", "onRefresh: called")
         getData()
     }
 

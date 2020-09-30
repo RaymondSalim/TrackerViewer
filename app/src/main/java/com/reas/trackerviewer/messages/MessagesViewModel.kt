@@ -39,7 +39,6 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
 
     fun smsFileDownloaded() {
         smsMap = loadSMS(smsFile)
-        Log.d(TAG, "smsFileDownloaded: ${Gson().toJson(smsMap)}")
         messagesDownloaded = true
     }
 
@@ -124,8 +123,4 @@ class MessagesViewModel(application: Application): AndroidViewModel(application)
         return output.toSortedMap(compareByDescending { output[it]?.mTime })
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        Log.d(TAG, "onCleared: cleared")
-    }
 }

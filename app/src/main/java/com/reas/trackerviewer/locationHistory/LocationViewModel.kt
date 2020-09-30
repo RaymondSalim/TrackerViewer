@@ -52,18 +52,21 @@ class LocationViewModel(application: Application): AndroidViewModel(application)
         return temp
     }
 
-    fun fileReady() {
+    fun setFileReady() {
         fileReady = true
     }
+
+    fun getFileStatus(): Boolean = fileReady
+
 
     fun dataChanged() {
         locationList.value = loadJson(locationFile)
     }
 
-    fun filterList(time: Long): ArrayList<LocationBaseObject> {
+    fun filterList(time: Long): ArrayList<LocationBaseObject>? {
         return locationList.value?.filter {
             it.mTime >= time && it.mTime < (time + 86400000)
-        } as ArrayList<LocationBaseObject>
+        } as ArrayList<LocationBaseObject>? ?: ArrayList<LocationBaseObject>()
     }
 
     fun lastLocation(): LatLng {
