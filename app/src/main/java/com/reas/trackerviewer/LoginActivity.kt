@@ -27,11 +27,6 @@ class LoginActivity : AppCompatActivity() {
             it.isEnabled = false
             signIn(textEmail.text.toString(), textPassword.text.toString())
         }
-
-        registerButton.setOnClickListener {
-            it.isEnabled = false
-            createUser(textEmail.text.toString(), textPassword.text.toString())
-        }
     }
 
     override fun onStart() {
@@ -39,20 +34,6 @@ class LoginActivity : AppCompatActivity() {
         if (auth.currentUser != null) {
             startMainActivity()
             finish()
-        }
-    }
-
-    private fun createUser(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
-            if (it.isSuccessful) {
-                Toast.makeText(applicationContext, getString(R.string.user_create_success), Toast.LENGTH_SHORT).show()
-
-            } else {
-                Log.e(TAG, "createUser: ${it.exception.toString()}", )
-                Toast.makeText(applicationContext, getString(R.string.user_create_fail), Toast.LENGTH_SHORT).show()
-
-            }
-            registerButton.isEnabled = true
         }
     }
 
