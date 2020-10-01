@@ -31,7 +31,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var mDrawer: DrawerLayout
+    lateinit var mDrawer: DrawerLayout
     private lateinit var navDrawer: NavigationView
 
     private var messagesFragment = MessagesFragment()

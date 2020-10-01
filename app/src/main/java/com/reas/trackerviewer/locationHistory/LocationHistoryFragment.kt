@@ -5,11 +5,10 @@ import android.content.Context
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +25,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import com.reas.trackerviewer.MainActivity
 import com.reas.trackerviewer.R
 import java.io.File
 import java.text.SimpleDateFormat
@@ -90,6 +90,8 @@ class LocationHistoryFragment : Fragment() {
         locationJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Location.json")
         locationFile = File(requireContext().filesDir.toString() + "/Location.json")
 
+        setHasOptionsMenu(true)
+
         // Finds the current date
         getTime()
     }
@@ -122,7 +124,6 @@ class LocationHistoryFragment : Fragment() {
 
             initializeBottomSheet()
 
-
             lastLocation = locationViewModel.lastLocation()
         } else {
             downloadFile()
@@ -131,16 +132,37 @@ class LocationHistoryFragment : Fragment() {
         return baseView
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.clear()
+        inflater.inflate(R.menu.location_history_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                (activity as MainActivity).mDrawer.openDrawer(GravityCompat.START)
+                true
+            }
+
+            R.id.refresh -> {
+                downloadFile()
+                true
+            }
+            else -> {
+                false
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
-
-
-
     }
 
     private fun downloadFile() {
+        localFile = false
         progressBar?.isIndeterminate = false
 
         locationJsonRef.getFile(locationFile).addOnSuccessListener {
@@ -258,7 +280,7 @@ class LocationHistoryFragment : Fragment() {
 //                initializeRecyclerView(1601398800772)
 
 
-            // Ignores miliseconds
+            // Ignores milliseconds
             if ((date.timeInMillis / 1000).toInt() >= (today/1000).toInt()) {
                 dateTextView!!.text = "Today"
             } else {
@@ -324,4 +346,5 @@ class LocationHistoryFragment : Fragment() {
     fun setLastLocation(latLng: LatLng) {
         lastLocation = latLng
     }
+
 }
