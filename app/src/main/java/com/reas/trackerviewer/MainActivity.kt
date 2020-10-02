@@ -180,6 +180,7 @@ class MainActivity : AppCompatActivity() {
                             FirebaseAuth.getInstance().signOut()
                             val loginIntent = Intent(this, LoginActivity::class.java)
                             startActivity(loginIntent)
+                            deleteFiles()
                             finish()
                     }
                     .show()
