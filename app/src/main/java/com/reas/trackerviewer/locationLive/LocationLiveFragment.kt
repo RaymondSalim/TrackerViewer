@@ -1,6 +1,6 @@
 package com.reas.trackerviewer.locationLive
 
-import android.os.Build
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -26,26 +26,21 @@ import com.reas.trackerviewer.R
 
 private const val TAG = "LocationLiveFragment"
 
-class LocationLiveFragment : Fragment(), OnMapReadyCallback {
+class LocationLiveFragment : Fragment() {
 
     private val mMarkers: HashMap<String, Marker> = HashMap()
     private lateinit var mMap: GoogleMap
 
-//    private val callback = OnMapReadyCallback { googleMap ->
-//        /**
-//         * Manipulates the map once available.
-//         * This callback is triggered when the map is ready to be used.
-//         * This is where we can add markers or lines, add listeners or move the camera.
-//         * In this case, we just add a marker near Sydney, Australia.
-//         * If Google Play services is not installed on the device, the user will be prompted to
-//         * install it inside the SupportMapFragment. This method will only be triggered once the
-//         * user has installed Google Play services and returned to the app.
-//         */
-//        val sydney = LatLng(-34.0, 151.0)
-//
-//        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-//        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-//    }
+    private val callback = OnMapReadyCallback { googleMap ->
+        mMap = googleMap!!
+        mMap.setMaxZoomPreference(16F)
+        getUpdates()
+    }
+
+    private val deviceID: String by lazy {
+        val id = context?.getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)?.getString("activeDevice", "") ?: ""
+        return@lazy id.substring(id.indexOf("(")+1, id.indexOf(")"))
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,11 +53,11 @@ class LocationLiveFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(this)
+        mapFragment?.getMapAsync(callback)
     }
 
     private fun getUpdates() {
-        val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/location/${Build.DEVICE}")
+        val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/location/${deviceID}")
 
         ref.addValueEventListener(object : ValueEventListener {
             var location: CustomLocationObject? = null
@@ -115,11 +110,6 @@ class LocationLiveFragment : Fragment(), OnMapReadyCallback {
 
     }
 
-    override fun onMapReady(googleMap: GoogleMap?) {
-        mMap = googleMap!!
-        mMap.setMaxZoomPreference(16F)
-        getUpdates()
-    }
 
     private fun loadJson(string: String): CustomLocationObject? {
         // Loads JSON File to CustomLocationObject
